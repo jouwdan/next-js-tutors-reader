@@ -12,7 +12,7 @@ import {
   Globe,
   type LucideIcon,
 } from "lucide-react"
-import type { LoType } from "./types"
+import type { Lo, LoType } from "./types"
 
 interface LoMeta {
   icon: LucideIcon
@@ -43,4 +43,22 @@ export const LO_META: Record<LoType, LoMeta> = {
 
 export function loMeta(type: LoType): LoMeta {
   return LO_META[type] ?? LO_META.note
+}
+
+/**
+ * Courses can define per-LO Iconify icons (e.g. "ri:plant-fill") with a custom
+ * color, either directly on the LO or in its frontmatter. Resolve them to an
+ * Iconify CDN SVG URL so no icon library is needed at runtime.
+ */
+export function customIconUrl(lo: Pick<Lo, "icon" | "frontMatter">): string | undefined {
+  const icon = lo.icon ?? lo.frontMatter?.icon
+  if (!icon?.type || !icon.type.includes(":")) return undefined
+
+  const [prefix, name] = icon.type.split(":")
+  let color = String(icon.color ?? "currentColor").trim()
+  // Hex colors are often stored without "#" (and sometimes as bare numbers)
+  if (/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(color)) {
+    color = `#${color.length === 3 ? color : color.padStart(6, "0")}`
+  }
+  return `https://api.iconify.design/${prefix}/${name}.svg?color=${encodeURIComponent(color)}`
 }

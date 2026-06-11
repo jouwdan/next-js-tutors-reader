@@ -17,6 +17,11 @@ export type LoType =
   | "github"
   | "podcast"
 
+export interface IconType {
+  type: string
+  color?: string | number
+}
+
 export interface VideoIdentifier {
   service: string
   id: string
@@ -37,6 +42,8 @@ export interface Lo {
   route: string
   img: string
   imgFile?: string
+  icon?: IconType
+  frontMatter?: { icon?: IconType; [key: string]: unknown }
   video: string
   videoids?: VideoIdentifiers
   pdf?: string
