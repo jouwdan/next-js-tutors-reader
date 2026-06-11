@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
-import { loMeta } from "@/lib/icons"
+import { customIconUrl, loMeta } from "@/lib/icons"
 import type { Lo } from "@/lib/types"
 
 const EXTERNAL = new Set(["web", "github", "archive"])
@@ -11,9 +11,16 @@ export function LoCard({ lo }: { lo: Lo }) {
   const external = EXTERNAL.has(lo.type) && !lo.route.startsWith("/")
   const title = lo.title.trim()
 
+  const iconUrl = customIconUrl(lo)
+
   const inner = (
     <>
-      {lo.img ? (
+      {iconUrl ? (
+        <div className="flex h-36 items-center justify-center border-b bg-muted/40 p-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={iconUrl || "/placeholder.svg"} alt="" loading="lazy" className="size-16" />
+        </div>
+      ) : lo.img ? (
         <div className="flex h-36 items-center justify-center overflow-hidden border-b bg-muted/40 p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
