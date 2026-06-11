@@ -1,33 +1,118 @@
-# next-js-tutors-reader
+# Tutors Reader — Next.js
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+A rebuild of the [Tutors](https://github.com/tutors-sdk/tutors) open learning web toolkit's Reader application in Next.js (App Router), with a clean, minimal theme inspired by Vercel and Payload CMS.
 
-## Built with v0
+> **Note:** This project was built as a test using **Claude Fable 5** and **[v0 by Vercel](https://v0.app)**.
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
+## What it does
 
-[Continue working on v0 →](https://v0.app/chat/projects/prj_u2xrnIPmLMQ52DLqhn5Tv3cWwLlU)
+The Reader renders any published Tutors course. Enter a course ID on the home page (or follow a sample course link) and the app fetches the course's `tutors.json` from `https://{courseId}.netlify.app`, decorates the learning-object tree, and renders it as a browsable course site — topics, units, labs with step navigation, notes, talks (PDF), videos, and podcasts.
 
-## Getting Started
+## Architecture
 
-First, run the development server:
+### Data flow
+
+```
+{courseId}.netlify.app/tutors.json
+        │  fetched server-side (RSC), cached for 5 min
+        ▼
+lib/course.ts ── decorateCourse()
+        │  • replaces {{COURSEURL}} placeholders with the real course host
+        │  • normalizes legacy hash routes (#topic/...) to path routes (/topic/...)
+        │  • derives type/id for legacy typeless lab steps
+        │  • filters hidden learning objects (hide: true)
+        ▼
+Decorated Lo tree (lib/types.ts)
+        │  findLo() / findLab() resolve a route path to a node in the tree
+        ▼
+Route pages (thin RSCs) ──► View components (components/*)
+```
+
+### Learning-object (Lo) model
+
+A course is a recursive tree of learning objects. Each `Lo` has a `type`, `title`, `route`, optional `contentMd`, and optional `los` children:
+
+| Type | Description |
+| --- | --- |
+| `course` | Root node, contains topics |
+| `topic` / `side` | A course section; `side` topics render units in a side column |
+| `unit` | A grouping of learning objects inside a topic, rendered as a card grid section |
+| `lab` / `book` | Multi-step practical, steps rendered with a sidebar + prev/next navigation |
+| `step` | A single lab step (markdown) |
+| `note` / `panelnote` | Markdown content page |
+| `talk` / `paneltalk` | PDF slide deck, rendered in an inline viewer |
+| `video` / `panelvideo` | YouTube embed |
+| `podcast` | Spotify episode embed |
+| `web`, `github`, `archive` | External links rendered as cards |
+
+### Routes
+
+Routes mirror the original SvelteKit reader's URL scheme so existing course links work:
+
+| Route | Renders |
+| --- | --- |
+| `/` | Course launcher: course-ID input + sample course gallery |
+| `/course/[courseId]` | Course home — topic card grid |
+| `/topic/[courseId]/[...path]` | Topic page with unit sections (and side units) |
+| `/lab/[courseId]/[...path]` | Lab with step sidebar, keyboard (←/→) and prev/next navigation |
+| `/tutorial/[courseId]/[...path]` | Alias for labs published as tutorials |
+| `/note/...`, `/panelnote/...` | Markdown notes |
+| `/talk/...`, `/paneltalk/...` | PDF talks |
+| `/video/...`, `/panelvideo/...` | Videos |
+| `/podcast/...` | Podcasts |
+
+All route files are thin — they parse params, fetch + decorate the course, resolve the Lo with `findLo`/`findLab`, and delegate to a shared view component.
+
+### Project structure
+
+```
+app/
+  page.tsx                          # Home / course launcher
+  layout.tsx                        # Root layout, fonts, ThemeProvider
+  globals.css                       # Design tokens, markdown + syntax highlight styles
+  course/[courseId]/page.tsx        # Course home
+  topic/[courseId]/[...path]/       # Topic pages
+  lab|tutorial/[courseId]/[...path] # Labs
+  note|panelnote|talk|paneltalk|video|panelvideo|podcast/...  # Content pages
+lib/
+  types.ts                          # Lo / Course type definitions
+  course.ts                         # Fetching, decoration, tree search (findLo, findLab, breadcrumbs)
+  icons.tsx                         # Lo type → lucide icon + color mapping
+components/
+  course-launcher.tsx               # Home page input + sample gallery
+  lo-card.tsx                       # Card for any learning object
+  unit-section.tsx                  # Unit card-grid section
+  lab-shell.tsx                     # Lab step sidebar + keyboard navigation (client)
+  lab-page.tsx / lo-page.tsx        # Lab and simple-LO page views
+  markdown.tsx                      # react-markdown + GFM + rehype-highlight renderer
+  pdf-viewer.tsx / video-player.tsx # Talk and video embeds
+  top-bar.tsx                       # Breadcrumb header + theme toggle
+  theme-provider.tsx / theme-toggle.tsx
+```
+
+### Key design decisions
+
+- **Server-first rendering.** Course JSON is fetched in React Server Components with `next: { revalidate: 300 }` caching; only interactive pieces (lab sidebar, theme toggle, launcher input) are client components.
+- **No database.** The app is a pure reader over published course JSON, matching the original architecture where courses are static sites generated by the Tutors CLI.
+- **Legacy compatibility.** The decoration layer absorbs differences between current and legacy course formats (hash routes, typeless steps, URL-encoded step ids) so one codebase reads both.
+- **Theming.** Semantic design tokens in `globals.css` (neutral palette, 1px borders, Geist + Geist Mono), dark mode via `next-themes`, markdown styled with a custom `prose-tutors` class and minimal token-based syntax highlighting.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and try a sample course such as `reference-course` or `wad2-2023`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Built with v0
 
-## Learn More
+This repository is linked to a [v0](https://v0.app) project. Start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
 
-To learn more, take a look at the following resources:
+[Continue working on v0 →](https://v0.app/chat/projects/prj_u2xrnIPmLMQ52DLqhn5Tv3cWwLlU)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+## Credits
+
+- [Tutors](https://tutors.dev) — the original open-source learning toolkit ([tutors-sdk/tutors](https://github.com/tutors-sdk/tutors), [tutors-sdk/tutors-apps](https://github.com/tutors-sdk/tutors-apps))
+- Built as a test using Claude Fable 5 and [v0 by Vercel](https://v0.app)
