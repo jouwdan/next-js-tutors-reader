@@ -8,7 +8,7 @@ const EXTERNAL = new Set(["web", "github", "archive"])
 export function LoCard({ lo }: { lo: Lo }) {
   const meta = loMeta(lo.type)
   const Icon = meta.icon
-  const external = EXTERNAL.has(lo.type)
+  const external = EXTERNAL.has(lo.type) && !lo.route.startsWith("/")
   const title = lo.title.trim()
 
   const inner = (
