@@ -51,6 +51,11 @@ function decorate(
     if (decorated.route.startsWith("#")) {
       decorated.route = `/${decorated.route.slice(1)}`
     }
+    // Links to other Tutors courses ("/course/<domain>") stay inside the reader
+    if (decorated.route.startsWith("/course/")) {
+      const domain = decorated.route.slice("/course/".length)
+      decorated.route = `/course/${domain.replace(/\.netlify\.app$/, "")}`
+    }
   }
 
   // Legacy lab steps have no type/id; derive them from the route and clean the title

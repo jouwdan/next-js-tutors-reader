@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { getCourse } from "@/lib/course"
 import { CourseError } from "@/components/course-error"
 import { LoCard } from "@/components/lo-card"
+import { UnitSection } from "@/components/unit-section"
 import { TopBar } from "@/components/top-bar"
 
 interface Props {
@@ -24,7 +25,10 @@ export default async function CoursePage({ params }: Props) {
 
   if (!result.ok) return <CourseError courseId={courseId} />
   const course = result.course
-  const topics = (course.los ?? []).filter((lo) => lo.type === "topic")
+  const children = course.los ?? []
+  const topics = children.filter((lo) => lo.type === "topic")
+  // Portfolio-style courses nest their content in top-level units instead of topics
+  const units = children.filter((lo) => (lo.type === "unit" || lo.type === "side") && (lo.los?.length ?? 0) > 0)
   const credits = course.properties?.credits as string | undefined
 
   return (
@@ -47,11 +51,16 @@ export default async function CoursePage({ params }: Props) {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {topics.map((topic) => (
-            <LoCard key={topic.id} lo={topic} />
-          ))}
-        </div>
+        {topics.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {topics.map((topic) => (
+              <LoCard key={topic.id} lo={topic} />
+            ))}
+          </div>
+        )}
+        {units.map((unit) => (
+          <UnitSection key={unit.id + unit.title} unit={unit} />
+        ))}
       </main>
     </div>
   )
