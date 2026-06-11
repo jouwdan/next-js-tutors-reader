@@ -47,6 +47,19 @@ function decorate(
   // Internal routes: /type/{courseId}/...
   if (decorated.route) {
     decorated.route = decorated.route.replace(COURSE_URL_PLACEHOLDER, courseId)
+    // Legacy courses use hash-style routes ("#topic/...") instead of path routes
+    if (decorated.route.startsWith("#")) {
+      decorated.route = `/${decorated.route.slice(1)}`
+    }
+  }
+
+  // Legacy lab steps have no type/id; derive them from the route and clean the title
+  if ((!decorated.type || String(decorated.type) === "None") && decorated.contentMd !== undefined) {
+    decorated.type = "step"
+    if (!decorated.id || String(decorated.id) === "None") {
+      decorated.id = decorated.route?.split("/").pop() ?? decorated.shortTitle ?? ""
+    }
+    decorated.title = (decorated.shortTitle ?? decorated.title ?? "").replace(/^#+\s*/, "").trim()
   }
   // Archives link directly to the zip file on the course domain
   if (decorated.type === "archive" && decorated.archiveFile) {
@@ -106,8 +119,16 @@ const COMPATIBLE_TYPES: Partial<Record<LoType, LoType[]>> = {
   note: ["note", "panelnote"],
 }
 
+function decodeSegment(segment: string): string {
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return segment
+  }
+}
+
 export function findLo(course: Course, type: LoType, loPath: string[]): Lo | undefined {
-  const target = `/${type}/${course.courseId}/${loPath.join("/")}`.replace(/\/+$/, "")
+  const target = `/${type}/${course.courseId}/${loPath.map(decodeSegment).join("/")}`.replace(/\/+$/, "")
   const accepted = COMPATIBLE_TYPES[type] ?? [type]
   let found: Lo | undefined
 
@@ -137,7 +158,7 @@ export function findLab(
   let stepId: string | undefined
 
   if (!lab && loPath.length > 1) {
-    stepId = loPath[loPath.length - 1]
+    stepId = decodeSegment(loPath[loPath.length - 1])
     lab = findLo(course, type, loPath.slice(0, -1))
   }
   if (!lab) return undefined
