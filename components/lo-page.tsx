@@ -10,7 +10,7 @@ interface LoPageViewProps {
   courseId: string
   path: string[]
   type: LoType
-  kind: "note" | "talk" | "video"
+  kind: "note" | "talk" | "video" | "podcast"
 }
 
 export async function LoPageView({ courseId, path, type, kind }: LoPageViewProps) {
@@ -48,6 +48,20 @@ export async function LoPageView({ courseId, path, type, kind }: LoPageViewProps
             <p className="text-muted-foreground">No PDF available for this talk.</p>
           ))}
         {kind === "note" && <Markdown content={lo.contentMd} baseUrl={loBaseUrl(course, lo)} />}
+        {kind === "podcast" &&
+          (lo.episode?.service === "spotify" && lo.episode.id ? (
+            <iframe
+              src={`https://open.spotify.com/embed/episode/${lo.episode.id}`}
+              title={lo.title.trim()}
+              width="100%"
+              height="232"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+              className="rounded-lg border"
+            />
+          ) : (
+            <p className="text-muted-foreground">No episode available for this podcast.</p>
+          ))}
       </main>
     </div>
   )

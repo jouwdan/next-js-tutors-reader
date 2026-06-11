@@ -98,13 +98,22 @@ export async function getCourse(courseId: string): Promise<CourseResult> {
  * Find an LO in the course tree by matching the tail of its route.
  * `loPath` is the path segments after /{type}/{courseId}/ in the URL.
  */
+/** Route prefix → LO types that may live under it */
+const COMPATIBLE_TYPES: Partial<Record<LoType, LoType[]>> = {
+  topic: ["topic", "side"],
+  video: ["video", "panelvideo"],
+  talk: ["talk", "paneltalk"],
+  note: ["note", "panelnote"],
+}
+
 export function findLo(course: Course, type: LoType, loPath: string[]): Lo | undefined {
-  const target = `/${type}/${course.courseId}/${loPath.join("/")}`
+  const target = `/${type}/${course.courseId}/${loPath.join("/")}`.replace(/\/+$/, "")
+  const accepted = COMPATIBLE_TYPES[type] ?? [type]
   let found: Lo | undefined
 
   function walk(lo: Lo) {
     if (found) return
-    if (lo.route === target) {
+    if (lo.route?.replace(/\/+$/, "") === target && accepted.includes(lo.type)) {
       found = lo
       return
     }

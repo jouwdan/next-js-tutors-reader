@@ -41,6 +41,7 @@ export interface Lo {
   videoids?: VideoIdentifiers
   pdf?: string
   pdfFile?: string
+  episode?: { service: string; id: string }
   archiveFile?: string
   hide: boolean
   authLevel?: number
