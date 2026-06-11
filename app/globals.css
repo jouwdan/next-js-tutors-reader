@@ -125,6 +125,124 @@
     @apply bg-background text-foreground;
   }
   html {
-    @apply font-sans;
+    @apply font-sans bg-background;
   }
+}
+
+/* ---------- Markdown content (Vercel docs style) ---------- */
+
+.prose-tutors {
+  @apply text-foreground leading-relaxed text-[15px];
+}
+.prose-tutors > * + * {
+  margin-top: 1rem;
+}
+.prose-tutors h1,
+.prose-tutors h2,
+.prose-tutors h3,
+.prose-tutors h4 {
+  @apply font-semibold tracking-tight text-balance scroll-mt-20;
+}
+.prose-tutors h1 {
+  @apply text-2xl mt-10;
+}
+.prose-tutors h2 {
+  @apply text-xl mt-10 border-b pb-2;
+}
+.prose-tutors h3 {
+  @apply text-lg mt-8;
+}
+.prose-tutors h4 {
+  @apply text-base mt-6;
+}
+.prose-tutors a {
+  @apply text-sky-600 dark:text-sky-400 underline underline-offset-4 decoration-sky-600/30 hover:decoration-sky-600;
+}
+.prose-tutors ul {
+  @apply list-disc pl-6 flex flex-col gap-1.5;
+}
+.prose-tutors ol {
+  @apply list-decimal pl-6 flex flex-col gap-1.5;
+}
+.prose-tutors blockquote {
+  @apply border-l-2 border-border pl-4 text-muted-foreground;
+}
+.prose-tutors img {
+  @apply rounded-md border my-2 max-w-full;
+}
+.prose-tutors table {
+  @apply w-full text-sm border-collapse;
+}
+.prose-tutors th {
+  @apply border bg-muted px-3 py-2 text-left font-medium;
+}
+.prose-tutors td {
+  @apply border px-3 py-2;
+}
+.prose-tutors hr {
+  @apply my-8 border-border;
+}
+.prose-tutors code {
+  @apply font-mono text-[13px] rounded bg-muted px-1.5 py-0.5;
+}
+.prose-tutors pre {
+  @apply rounded-lg border bg-muted/50 p-4 overflow-x-auto;
+}
+.prose-tutors pre code {
+  @apply bg-transparent p-0 text-[13px] leading-relaxed;
+}
+
+/* ---------- Syntax highlighting (minimal, token-based) ---------- */
+
+.hljs-comment,
+.hljs-quote {
+  @apply text-muted-foreground italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-type {
+  color: oklch(0.55 0.18 280);
+}
+.dark .hljs-keyword,
+.dark .hljs-selector-tag,
+.dark .hljs-literal,
+.dark .hljs-type {
+  color: oklch(0.75 0.12 280);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition {
+  color: oklch(0.52 0.12 150);
+}
+.dark .hljs-string,
+.dark .hljs-regexp,
+.dark .hljs-addition {
+  color: oklch(0.78 0.1 150);
+}
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-symbol {
+  color: oklch(0.55 0.15 50);
+}
+.dark .hljs-number,
+.dark .hljs-built_in,
+.dark .hljs-builtin-name,
+.dark .hljs-symbol {
+  color: oklch(0.78 0.12 50);
+}
+.hljs-title,
+.hljs-function,
+.hljs-name,
+.hljs-attr,
+.hljs-attribute {
+  color: oklch(0.5 0.13 240);
+}
+.dark .hljs-title,
+.dark .hljs-function,
+.dark .hljs-name,
+.dark .hljs-attr,
+.dark .hljs-attribute {
+  color: oklch(0.75 0.1 240);
 }
